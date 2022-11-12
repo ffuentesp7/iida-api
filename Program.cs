@@ -23,7 +23,7 @@ var parameters = new Parameters {
 	RabbitMqHost = rabbitMqHost,
 	RabbitMqQueue = rabbitMqQueue
 };
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
 	options.SwaggerDoc("v1", new OpenApiInfo {
