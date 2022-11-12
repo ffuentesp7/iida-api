@@ -1,27 +1,25 @@
-using Iida.Api;
-
 using Microsoft.OpenApi.Models;
 
-using System.Reflection;
-
 string? mySqlConnectionString;
-string? rabbitMqHost;
+string? rabbitMqHostname;
 string? rabbitMqQueue;
 
 var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsDevelopment()) {
 	mySqlConnectionString = builder.Configuration["MYSQL_CONNECTIONSTRING"];
-	rabbitMqHost = builder.Configuration["RABBITMQ_HOST"];
+	rabbitMqHostname = builder.Configuration["RABBITMQ_HOST"];
 	rabbitMqQueue = builder.Configuration["RABBITMQ_QUEUE"];
 } else {
 	mySqlConnectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTIONSTRING");
-	rabbitMqHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST");
+	rabbitMqHostname = Environment.GetEnvironmentVariable("RABBITMQ_HOST");
 	rabbitMqQueue = Environment.GetEnvironmentVariable("RABBITMQ_QUEUE");
 }
-var parameters = new Parameters {
-	MySqlConnectionString = mySqlConnectionString,
-	RabbitMqHost = rabbitMqHost,
-	RabbitMqQueue = rabbitMqQueue
+var mySqlParameters = new Iida.Shared.MySql.Parameters {
+	ConnectionString = mySqlConnectionString
+};
+var rabbitMqParameters = new Iida.Shared.RabbitMq.Parameters {
+	Hostname = rabbitMqHostname,
+	Queue = rabbitMqQueue
 };
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
@@ -35,11 +33,10 @@ builder.Services.AddSwaggerGen(options => {
 			Url = new Uri("https://www.vichoste.cl")
 		}
 	});
-	var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-	options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", builder => _ = builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-builder.Services.AddSingleton<Parameters>(parameters);
+builder.Services.AddSingleton(mySqlParameters);
+builder.Services.AddSingleton(rabbitMqParameters);
 
 var app = builder.Build();
 _ = app.UseCors("AllowAll");

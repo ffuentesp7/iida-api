@@ -1,7 +1,5 @@
 ﻿using System.Text;
 
-using GeoJSON.Net.Converters;
-
 using Iida.Shared.Requests;
 
 using Microsoft.AspNetCore.Authorization;
@@ -17,24 +15,26 @@ namespace Iida.Api.Controllers;
 [AllowAnonymous, ApiController, EnableCors("AllowAll"), Route("api/crop-order")]
 public class OrderController : ControllerBase {
 	private readonly ILogger _logger;
-	private readonly Parameters _parameters;
+	private readonly Shared.MySql.Parameters _mySqlParameters;
+	private readonly Shared.RabbitMq.Parameters _rabbitMqParameters;
 
-	public OrderController(ILogger<OrderController> logger, Parameters parameters) {
+	public OrderController(ILogger<OrderController> logger, Shared.MySql.Parameters mySqlParameters, Shared.RabbitMq.Parameters rabbitMqParameters) {
 		_logger = logger;
-		_parameters = parameters;
+		_mySqlParameters = mySqlParameters;
+		_rabbitMqParameters = rabbitMqParameters;
 	}
-	
+
 	[HttpPost("place-order")]
 	public async Task<ActionResult<Order>> PlaceRequest([FromBody] Order request) {
-		var factory = new ConnectionFactory() { HostName = _parameters.RabbitMqHost };
+		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname };
 		using (var connection = factory.CreateConnection())
 		using (var channel = connection.CreateModel()) {
-			_ = channel.QueueDeclare(queue: _parameters.RabbitMqQueue, durable: true, exclusive: false, autoDelete: false, arguments: null);
+			_ = channel.QueueDeclare(queue: _rabbitMqParameters.Queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
 			var order = JsonConvert.SerializeObject(request);
 			var body = Encoding.UTF8.GetBytes(order);
-			channel.BasicPublish(exchange: "", routingKey: _parameters.RabbitMqQueue, body: body);
+			channel.BasicPublish(exchange: "", routingKey: _rabbitMqParameters.Queue, body: body);
 			_logger.LogInformation("Envia3");
-        }
+		}
 		return this.Ok();
 	}
 }
