@@ -2,17 +2,22 @@ using Microsoft.OpenApi.Models;
 
 string? mySqlConnectionString;
 string? rabbitMqHostname;
+string? rabbitMqPassword;
 string? rabbitMqQueue;
-
+string? rabbitMqUsername;
 var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsDevelopment()) {
 	mySqlConnectionString = builder.Configuration["MYSQL_CONNECTIONSTRING"];
 	rabbitMqHostname = builder.Configuration["RABBITMQ_HOST"];
+	rabbitMqPassword = builder.Configuration["RABBITMQ_PASSWORD"];
 	rabbitMqQueue = builder.Configuration["RABBITMQ_QUEUE"];
+	rabbitMqUsername = builder.Configuration["RABBITMQ_USERNAME"];
 } else {
 	mySqlConnectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTIONSTRING");
 	rabbitMqHostname = Environment.GetEnvironmentVariable("RABBITMQ_HOST");
+	rabbitMqPassword = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD");
 	rabbitMqQueue = Environment.GetEnvironmentVariable("RABBITMQ_QUEUE");
+	rabbitMqUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME");
 }
 var mySqlParameters = new Iida.Shared.MySql.Parameters {
 	ConnectionString = mySqlConnectionString
@@ -37,7 +42,6 @@ builder.Services.AddSwaggerGen(options => {
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", builder => _ = builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 builder.Services.AddSingleton(mySqlParameters);
 builder.Services.AddSingleton(rabbitMqParameters);
-
 var app = builder.Build();
 _ = app.UseCors("AllowAll");
 if (app.Environment.IsDevelopment()) {

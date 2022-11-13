@@ -17,16 +17,14 @@ public class OrderController : ControllerBase {
 	private readonly ILogger _logger;
 	private readonly Shared.MySql.Parameters _mySqlParameters;
 	private readonly Shared.RabbitMq.Parameters _rabbitMqParameters;
-
 	public OrderController(ILogger<OrderController> logger, Shared.MySql.Parameters mySqlParameters, Shared.RabbitMq.Parameters rabbitMqParameters) {
 		_logger = logger;
 		_mySqlParameters = mySqlParameters;
 		_rabbitMqParameters = rabbitMqParameters;
 	}
-
 	[HttpPost("place-order")]
 	public async Task<ActionResult<Order>> PlaceRequest([FromBody] Order request) {
-		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname };
+		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname, UserName = _rabbitMqParameters.Username, Password = _rabbitMqParameters.Password };
 		using (var connection = factory.CreateConnection())
 		using (var channel = connection.CreateModel()) {
 			_ = channel.QueueDeclare(queue: _rabbitMqParameters.Queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
