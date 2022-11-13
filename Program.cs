@@ -24,7 +24,9 @@ var mySqlParameters = new Iida.Shared.MySql.Parameters {
 };
 var rabbitMqParameters = new Iida.Shared.RabbitMq.Parameters {
 	Hostname = rabbitMqHostname,
-	Queue = rabbitMqQueue
+	Password = rabbitMqPassword,
+	Queue = rabbitMqQueue,
+	Username = rabbitMqUsername
 };
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
