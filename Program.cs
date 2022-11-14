@@ -46,7 +46,6 @@ builder.Services.AddSwaggerGen(options => {
 	});
 });
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", builder => _ = builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-builder.Services.AddSingleton(mySqlParameters);
 builder.Services.AddSingleton(rabbitMqParameters);
 var app = builder.Build();
 _ = app.UseCors("AllowAll");

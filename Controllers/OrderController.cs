@@ -1,7 +1,6 @@
 ﻿using System.Text;
 
 using Iida.Api.Contexts;
-using Iida.Shared.DataTransferObjects;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -24,16 +23,16 @@ public class OrderController : ControllerBase {
 		_context = context;
 	}
 	[HttpPost("place-order")]
-	public async Task<ActionResult<Order>> PlaceRequest([FromBody] Order request) {
+	public async Task<ActionResult<string>> PlaceRequest([FromBody] Shared.DataTransferObjects.Order request) {
 		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname, UserName = _rabbitMqParameters.Username, Password = _rabbitMqParameters.Password };
 		using (var connection = factory.CreateConnection())
 		using (var channel = connection.CreateModel()) {
 			_ = channel.QueueDeclare(queue: _rabbitMqParameters.Queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
-			var order = JsonConvert.SerializeObject(request);
-			var body = Encoding.UTF8.GetBytes(order);
+			var serialized = JsonConvert.SerializeObject(request);
+			var body = Encoding.UTF8.GetBytes(serialized);
 			channel.BasicPublish(exchange: "", routingKey: _rabbitMqParameters.Queue, body: body);
 			_logger.LogInformation("Order sent to queue");
 		}
-		return this.Ok();
+		return Ok($"Order placed successfully");
 	}
 }
