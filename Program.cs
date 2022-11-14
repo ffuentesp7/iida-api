@@ -1,3 +1,6 @@
+using Iida.Api.Contexts;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 string? mySqlConnectionString;
@@ -28,6 +31,7 @@ var rabbitMqParameters = new Iida.Shared.RabbitMq.Parameters {
 	Queue = rabbitMqQueue,
 	Username = rabbitMqUsername
 };
+builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(mySqlConnectionString, ServerVersion.AutoDetect(mySqlConnectionString), mySqlOptions => _ = mySqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)), contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {

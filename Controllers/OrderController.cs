@@ -31,7 +31,7 @@ public class OrderController : ControllerBase {
 			var order = JsonConvert.SerializeObject(request);
 			var body = Encoding.UTF8.GetBytes(order);
 			channel.BasicPublish(exchange: "", routingKey: _rabbitMqParameters.Queue, body: body);
-			_logger.LogInformation("Envia3");
+			_logger.LogInformation("Order sent to queue");
 		}
 		return this.Ok();
 	}
