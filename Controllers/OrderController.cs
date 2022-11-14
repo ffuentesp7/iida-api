@@ -1,6 +1,7 @@
 ﻿using System.Text;
 
-using Iida.Shared.Requests;
+using Iida.Api.Contexts;
+using Iida.Shared.DataTransferObjects;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -15,12 +16,12 @@ namespace Iida.Api.Controllers;
 [AllowAnonymous, ApiController, EnableCors("AllowAll"), Route("api/crop-order")]
 public class OrderController : ControllerBase {
 	private readonly ILogger _logger;
-	private readonly Shared.MySql.Parameters _mySqlParameters;
 	private readonly Shared.RabbitMq.Parameters _rabbitMqParameters;
-	public OrderController(ILogger<OrderController> logger, Shared.MySql.Parameters mySqlParameters, Shared.RabbitMq.Parameters rabbitMqParameters) {
+	private readonly AppDbContext _context;
+	public OrderController(ILogger<OrderController> logger, AppDbContext context, Shared.RabbitMq.Parameters rabbitMqParameters) {
 		_logger = logger;
-		_mySqlParameters = mySqlParameters;
 		_rabbitMqParameters = rabbitMqParameters;
+		_context = context;
 	}
 	[HttpPost("place-order")]
 	public async Task<ActionResult<Order>> PlaceRequest([FromBody] Order request) {
