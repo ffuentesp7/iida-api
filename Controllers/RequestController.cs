@@ -1,7 +1,7 @@
 ﻿using System.Text;
 
 using Iida.Api.Contexts;
-using Iida.Shared.Models;
+using Iida.Shared.DataTransferObjects;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -25,7 +25,7 @@ public class RequestController : ControllerBase {
 	}
 	[HttpPost("place")]
 	public async Task<ActionResult<string>> PlaceRequest([FromBody] Shared.DataTransferObjects.Request request) {
-		var order = new Order {
+		var order = new Shared.Models.Order {
 			Guid = Guid.NewGuid(),
 			Status = "Created",
 			Timestamp = DateTimeOffset.UtcNow,
@@ -33,12 +33,20 @@ public class RequestController : ControllerBase {
 			End = request.End,
 			CloudCover = request.CloudCover,
 		};
-		request.Guid = order.Guid;
+		var queueRequest = new QueueRequest {
+			Guid = order.Guid,
+			GeoJson = request.GeoJson,
+			Timestamp = order.Timestamp,
+			Start = request.Start,
+			End = request.End,
+			CloudCover = request.CloudCover
+		};
+		Console.WriteLine($"Guid: {request.Guid}");
 		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname, UserName = _rabbitMqParameters.Username, Password = _rabbitMqParameters.Password };
 		using var connection = factory.CreateConnection();
 		using var channel = connection.CreateModel();
 		_ = channel.QueueDeclare(queue: _rabbitMqParameters.Queue, durable: true, exclusive: false, autoDelete: false, arguments: null);
-		var serialized = JsonConvert.SerializeObject(request);
+		var serialized = JsonConvert.SerializeObject(queueRequest);
 		var body = Encoding.UTF8.GetBytes(serialized);
 		channel.BasicPublish(exchange: "", routingKey: _rabbitMqParameters.Queue, body: body);
 		_logger.LogInformation("Request sent to queue");
