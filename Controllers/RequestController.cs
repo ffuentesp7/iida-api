@@ -61,7 +61,7 @@ public class RequestController : ControllerBase {
 		return order is null ? NotFound($"Order with GUID {guid} not found") : Ok(order.Status);
 	}
 	[HttpGet("result")]
-	public async Task<ActionResult<string>> Result(Guid guid) {
+	public async Task<ActionResult<Order>> Result(Guid guid) {
 		var order = await _context.Orders!.Include(o => o.EvapotranspirationMaps).Include(o => o.MeteorologicalDatas).Include(o => o.SatelliteImages).FirstOrDefaultAsync(o => o.Guid == guid);
 		if (order is null) {
 			return NotFound($"Order with GUID {guid} not found");
@@ -72,7 +72,36 @@ public class RequestController : ControllerBase {
 			case "Processing":
 				return Ok("Order processing");
 			default:
-				return Ok("TODO");
+				var dto = new Order {
+					Guid = order.Guid,
+					Status = order.Status,
+					Timestamp = order.Timestamp,
+					Start = order.Start,
+					End = order.End,
+					CloudCover = order.CloudCover
+				};
+				dto.EvapotranspirationMaps = order.EvapotranspirationMaps!.Select(e =>
+					new EvapotranspirationMap {
+						Guid = e.Guid,
+						Timestamp = e.Timestamp,
+						Url = e.Url
+					}
+				).ToList();
+				dto.MeteorologicalDatas = order.MeteorologicalDatas!.Select(m =>
+					new MeteorologicalData {
+						Guid = m.Guid,
+						Timestamp = m.Timestamp,
+						Url = m.Url
+					}
+				).ToList();
+				dto.SatelliteImages = order.SatelliteImages!.Select(s =>
+					new SatelliteImage {
+						Guid = s.Guid,
+						Timestamp = s.Timestamp,
+						Url = s.Url
+					}
+				).ToList();
+				return Ok(dto);
 		}
 	}
 }
