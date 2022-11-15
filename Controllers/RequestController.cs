@@ -6,6 +6,7 @@ using Iida.Shared.DataTransferObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
@@ -24,7 +25,7 @@ public class RequestController : ControllerBase {
 		_context = context;
 	}
 	[HttpPost("place")]
-	public async Task<ActionResult<string>> PlaceRequest([FromBody] Shared.DataTransferObjects.Request request) {
+	public async Task<ActionResult<string>> Place([FromBody] Shared.DataTransferObjects.Request request) {
 		var order = new Shared.Models.Order {
 			Guid = Guid.NewGuid(),
 			Status = "Created",
@@ -53,5 +54,25 @@ public class RequestController : ControllerBase {
 		_ = await _context.AddAsync(order);
 		_ = await _context.SaveChangesAsync();
 		return Ok($"Order with GUID {order.Guid} placed successfully");
+	}
+	[HttpGet("status")]
+	public async Task<ActionResult<string>> Status(Guid guid) {
+		var order = await _context.Orders!.FirstOrDefaultAsync(o => o.Guid == guid);
+		return order is null ? NotFound($"Order with GUID {guid} not found") : Ok(order.Status);
+	}
+	[HttpGet("result")]
+	public async Task<ActionResult<string>> Result(Guid guid) {
+		var order = await _context.Orders!.Include(o => o.EvapotranspirationMaps).Include(o => o.MeteorologicalDatas).FirstOrDefaultAsync(o => o.Guid == guid);
+		if (order is null) {
+			return NotFound($"Order with GUID {guid} not found");
+		}
+		switch (order.Status) {
+			case "Created":
+				return Ok("Order in queue");
+			case "Processing":
+				return Ok("Order processing");
+			default:
+				return Ok("TODO");
+		}
 	}
 }
