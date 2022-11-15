@@ -78,29 +78,29 @@ public class RequestController : ControllerBase {
 					Timestamp = order.Timestamp,
 					Start = order.Start,
 					End = order.End,
-					CloudCover = order.CloudCover
+					CloudCover = order.CloudCover,
+					EvapotranspirationMaps = order.EvapotranspirationMaps!.Select(e =>
+						new EvapotranspirationMap {
+							Guid = e.Guid,
+							Timestamp = e.Timestamp,
+							Url = e.Url
+						}
+					).ToList(),
+					MeteorologicalDatas = order.MeteorologicalDatas!.Select(m =>
+						new MeteorologicalData {
+							Guid = m.Guid,
+							Timestamp = m.Timestamp,
+							Url = m.Url
+						}
+					).ToList(),
+					SatelliteImages = order.SatelliteImages!.Select(s =>
+						new SatelliteImage {
+							Guid = s.Guid,
+							Timestamp = s.Timestamp,
+							Url = s.Url
+						}
+					).ToList()
 				};
-				dto.EvapotranspirationMaps = order.EvapotranspirationMaps!.Select(e =>
-					new EvapotranspirationMap {
-						Guid = e.Guid,
-						Timestamp = e.Timestamp,
-						Url = e.Url
-					}
-				).ToList();
-				dto.MeteorologicalDatas = order.MeteorologicalDatas!.Select(m =>
-					new MeteorologicalData {
-						Guid = m.Guid,
-						Timestamp = m.Timestamp,
-						Url = m.Url
-					}
-				).ToList();
-				dto.SatelliteImages = order.SatelliteImages!.Select(s =>
-					new SatelliteImage {
-						Guid = s.Guid,
-						Timestamp = s.Timestamp,
-						Url = s.Url
-					}
-				).ToList();
 				return Ok(dto);
 		}
 	}
