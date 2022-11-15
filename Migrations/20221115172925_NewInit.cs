@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Iida.Api.Migrations
 {
-    public partial class Init : Migration
+    public partial class NewInit : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -84,6 +84,31 @@ namespace Iida.Api.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "satellite_image",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    guid = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    timestamp = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
+                    url = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    version = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    OrderId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_satellite_image", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_satellite_image_order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "order",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_evapotranspiration_map_OrderId",
                 table: "evapotranspiration_map",
@@ -92,6 +117,11 @@ namespace Iida.Api.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_meteorological_data_OrderId",
                 table: "meteorological_data",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_satellite_image_OrderId",
+                table: "satellite_image",
                 column: "OrderId");
         }
 
@@ -102,6 +132,9 @@ namespace Iida.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "meteorological_data");
+
+            migrationBuilder.DropTable(
+                name: "satellite_image");
 
             migrationBuilder.DropTable(
                 name: "order");

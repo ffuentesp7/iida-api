@@ -9,4 +9,5 @@ public class AppDbContext : DbContext {
 	public DbSet<Order>? Orders { get; set; }
 	public DbSet<EvapotranspirationMap>? EvapotranspirationMaps { get; set; }
 	public DbSet<MeteorologicalData>? MeteorologicalDatas { get; set; }
+	public DbSet<SatelliteImage>? SatelliteImages { get; set; }
 }

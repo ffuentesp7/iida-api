@@ -62,7 +62,7 @@ public class RequestController : ControllerBase {
 	}
 	[HttpGet("result")]
 	public async Task<ActionResult<string>> Result(Guid guid) {
-		var order = await _context.Orders!.Include(o => o.EvapotranspirationMaps).Include(o => o.MeteorologicalDatas).FirstOrDefaultAsync(o => o.Guid == guid);
+		var order = await _context.Orders!.Include(o => o.EvapotranspirationMaps).Include(o => o.MeteorologicalDatas).Include(o => o.SatelliteImages).FirstOrDefaultAsync(o => o.Guid == guid);
 		if (order is null) {
 			return NotFound($"Order with GUID {guid} not found");
 		}

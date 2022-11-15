@@ -153,6 +153,47 @@ namespace Iida.Api.Migrations
                     b.ToTable("order");
                 });
 
+            modelBuilder.Entity("Iida.Shared.Models.SatelliteImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("guid")
+                        .HasColumnOrder(1);
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("Timestamp")
+                        .IsRequired()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("timestamp")
+                        .HasColumnOrder(2);
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("url")
+                        .HasColumnOrder(3);
+
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("version")
+                        .HasColumnOrder(5);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("satellite_image");
+                });
+
             modelBuilder.Entity("Iida.Shared.Models.EvapotranspirationMap", b =>
                 {
                     b.HasOne("Iida.Shared.Models.Order", "Order")
@@ -175,11 +216,24 @@ namespace Iida.Api.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Iida.Shared.Models.SatelliteImage", b =>
+                {
+                    b.HasOne("Iida.Shared.Models.Order", "Order")
+                        .WithMany("SatelliteImages")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Iida.Shared.Models.Order", b =>
                 {
                     b.Navigation("EvapotranspirationMaps");
 
                     b.Navigation("MeteorologicalDatas");
+
+                    b.Navigation("SatelliteImages");
                 });
 #pragma warning restore 612, 618
         }
