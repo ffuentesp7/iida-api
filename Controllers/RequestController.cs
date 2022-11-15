@@ -34,7 +34,12 @@ public class RequestController : ControllerBase {
 		channel.BasicPublish(exchange: "", routingKey: _rabbitMqParameters.Queue, body: body);
 		_logger.LogInformation("Request sent to queue");
 		var order = new Order {
-
+			Guid = Guid.NewGuid(),
+			Status = "created",
+			Timestamp = DateTimeOffset.UtcNow,
+			Start = request.Start,
+			End = request.End,
+			CloudCover = request.CloudCover,
 		};
 		return Ok($"Order with GUID {order.Guid} placed successfully");
 	}
