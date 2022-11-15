@@ -24,7 +24,7 @@ public class RequestController : ControllerBase {
 		_context = context;
 	}
 	[HttpPost("place-request")]
-	public ActionResult<string> PlaceRequest([FromBody] Shared.DataTransferObjects.Request request) {
+	public async Task<ActionResult<string>> PlaceRequest([FromBody] Shared.DataTransferObjects.Request request) {
 		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname, UserName = _rabbitMqParameters.Username, Password = _rabbitMqParameters.Password };
 		using var connection = factory.CreateConnection();
 		using var channel = connection.CreateModel();
@@ -41,6 +41,8 @@ public class RequestController : ControllerBase {
 			End = request.End,
 			CloudCover = request.CloudCover,
 		};
+		_ = await _context.AddAsync(order);
+		_ = await _context.SaveChangesAsync();
 		return Ok($"Order with GUID {order.Guid} placed successfully");
 	}
 }
