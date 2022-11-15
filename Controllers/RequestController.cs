@@ -13,7 +13,7 @@ using RabbitMQ.Client;
 
 namespace Iida.Api.Controllers;
 
-[AllowAnonymous, ApiController, EnableCors("AllowAll"), Route("api/crop-request")]
+[AllowAnonymous, ApiController, EnableCors("AllowAll"), Route("api/request")]
 public class RequestController : ControllerBase {
 	private readonly ILogger _logger;
 	private readonly Shared.RabbitMq.Parameters _rabbitMqParameters;
@@ -23,8 +23,17 @@ public class RequestController : ControllerBase {
 		_rabbitMqParameters = rabbitMqParameters;
 		_context = context;
 	}
-	[HttpPost("place-request")]
+	[HttpPost("place")]
 	public async Task<ActionResult<string>> PlaceRequest([FromBody] Shared.DataTransferObjects.Request request) {
+		var order = new Order {
+			Guid = Guid.NewGuid(),
+			Status = "Created",
+			Timestamp = DateTimeOffset.UtcNow,
+			Start = request.Start,
+			End = request.End,
+			CloudCover = request.CloudCover,
+		};
+		request.Guid = order.Guid;
 		var factory = new ConnectionFactory() { HostName = _rabbitMqParameters.Hostname, UserName = _rabbitMqParameters.Username, Password = _rabbitMqParameters.Password };
 		using var connection = factory.CreateConnection();
 		using var channel = connection.CreateModel();
@@ -33,14 +42,6 @@ public class RequestController : ControllerBase {
 		var body = Encoding.UTF8.GetBytes(serialized);
 		channel.BasicPublish(exchange: "", routingKey: _rabbitMqParameters.Queue, body: body);
 		_logger.LogInformation("Request sent to queue");
-		var order = new Order {
-			Guid = Guid.NewGuid(),
-			Status = "created",
-			Timestamp = DateTimeOffset.UtcNow,
-			Start = request.Start,
-			End = request.End,
-			CloudCover = request.CloudCover,
-		};
 		_ = await _context.AddAsync(order);
 		_ = await _context.SaveChangesAsync();
 		return Ok($"Order with GUID {order.Guid} placed successfully");
