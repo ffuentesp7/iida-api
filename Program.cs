@@ -1,4 +1,6 @@
 using Iida.Api.Contexts;
+using Iida.Api.CsvHelper;
+using Iida.Core.CsvHelper;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -48,6 +50,7 @@ builder.Services.AddSwaggerGen(options => {
 builder.Services.AddSwaggerGenNewtonsoftSupport();
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", builder => _ = builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 builder.Services.AddSingleton(rabbitMqParameters);
+builder.Services.AddScoped<ICsvService, CsvService>();
 var app = builder.Build();
 _ = app.UseCors("AllowAll");
 if (app.Environment.IsDevelopment()) {

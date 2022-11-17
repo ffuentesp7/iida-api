@@ -1,6 +1,7 @@
 ﻿using System.Text;
 
 using Iida.Api.Contexts;
+using Iida.Core.CsvHelper;
 using Iida.Shared.DataTransferObjects;
 
 using Microsoft.AspNetCore.Authorization;
@@ -19,10 +20,12 @@ public class RequestController : ControllerBase {
 	private readonly ILogger _logger;
 	private readonly Shared.RabbitMq.Parameters _rabbitMqParameters;
 	private readonly AppDbContext _context;
-	public RequestController(ILogger<RequestController> logger, AppDbContext context, Shared.RabbitMq.Parameters rabbitMqParameters) {
+	private readonly ICsvService _csvService;
+	public RequestController(ILogger<RequestController> logger, AppDbContext context, Shared.RabbitMq.Parameters rabbitMqParameters, ICsvService csvService) {
 		_logger = logger;
 		_rabbitMqParameters = rabbitMqParameters;
 		_context = context;
+		_csvService = csvService;
 	}
 	[HttpPost("place")]
 	public async Task<ActionResult<string>> Place([FromBody] Shared.DataTransferObjects.Request request) {
@@ -103,5 +106,9 @@ public class RequestController : ControllerBase {
 				};
 				return Ok(dto);
 		}
+	}
+	[HttpPost("upload")]
+	public async Task<ActionResult<string>> Upload([FromForm] IFormFile file) {
+
 	}
 }
